@@ -66,10 +66,10 @@ main{max-width:980px;width:100%;margin:0 auto;padding:20px 16px 8px;flex:1 0 aut
 .hero::before{content:"";position:absolute;right:-40px;top:-60px;width:360px;height:360px;background:radial-gradient(circle,rgba(232,185,92,.16),transparent 62%);pointer-events:none}
 .hero>*{position:relative}
 .hero .over{color:var(--gold);letter-spacing:.28em;text-transform:uppercase;font-size:11px;font-weight:600;line-height:16px}
-.hero h1{margin:8px 0 14px;font:600 30px/1.08 var(--serif);letter-spacing:.005em;color:#F6F8FB;max-width:15ch}
+.hero h1{margin:8px 0 14px;font:600 30px/1.08 var(--serif);letter-spacing:.005em;color:#F6F8FB}
 .hero .cd{align-self:flex-start;display:inline-block;color:var(--text-main);font-size:13px;line-height:20px;background:rgba(255,255,255,.05);border:1px solid rgba(232,185,92,.4);border-radius:999px;padding:5px 14px}
 .hero .xtree{position:absolute;right:6px;bottom:0;width:104px;height:auto;pointer-events:none}
-@media(min-width:768px){.hero{padding:40px 260px 40px 40px;min-height:250px}.hero h1{font-size:50px;max-width:none}.hero .over{font-size:12px}.hero .xtree{width:158px;right:44px}}
+@media(min-width:768px){.hero{padding:40px 260px 40px 40px;min-height:250px}.hero h1{font-size:50px}.hero .over{font-size:12px}.hero .xtree{width:158px;right:44px}}
 .info{background:rgba(142,197,238,.1);color:var(--text-main);border:1px solid rgba(142,197,238,.35);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;line-height:19px;margin-bottom:18px}
 
 /* ---- Onglets ---- */
@@ -261,7 +261,7 @@ input[type=file]{display:none}
 #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60}
 footer{background:#050B14;text-align:center;color:var(--text-muted);font-size:12px;padding:16px 16px calc(18px + env(safe-area-inset-bottom));border-top:1px solid rgba(232,185,92,.18)}
 footer .ic{color:var(--gold);width:13px;height:13px}
-@media(max-width:420px){.who .nm{display:none}.bar{gap:8px;padding:0 12px}.logo img{height:24px}}
+@media(max-width:420px){.hero h1{font-size:22px}.hero{padding-right:104px}.who .nm{display:none}.bar{gap:8px;padding:0 12px}.logo img{height:24px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.st-tw,.tw{opacity:.85!important}}
 </style>
 </head>
@@ -478,6 +478,7 @@ function cdText(){
   return n > 1 ? `Plus que ${n} jours avant Noël` : n === 1 ? 'Noël, c\'est demain' : n === 0 ? 'Joyeux Noël' : 'Merci d\'avoir joué';
 }
 function hero(title, line, cdId){
+  title = String(title).replace(/\s*Aurea Technology/, '<br><span style="white-space:nowrap">Aurea Technology</span>');
   return `<section class="hero"><div class="over">Noël ${new Date(serverNow()).getFullYear()}</div><h1>${title}</h1><span class="cd" ${cdId ? 'id="cd"' : ''}>${line}</span>${litTree('xtree')}</section>`;
 }
 
