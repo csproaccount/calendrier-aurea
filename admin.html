@@ -419,7 +419,7 @@ async function vQuestions(){
   <form id="sh" class="acts" style="align-items:center"><input type="number" id="shd" value="0" style="width:90px;min-height:36px"><button class="sm" type="submit">Décaler toutes les dates (jours)</button></form><span id="shm"></span></div>
   <div id="edit"></div>
   <div class="scroll"><table class="t"><thead><tr><th>Date</th><th>Type</th><th>Texte</th><th>Réponse</th><th></th></tr></thead><tbody>
-  ${Q.map(q=>`<tr data-id="${q.id}"><td>${fmtQD(q.q_date)}</td><td>${TYPES[q.case_type]}${q.multiplier>1?' ×'+q.multiplier:''}${q.speed?' ⚡':''}</td><td>${esc(q.question.slice(0,90))}${q.question.length>90?'…':''}</td><td>${esc(q.answer_label)}</td>
+  ${Q.map(q=>`<tr data-id="${q.id}"><td>${fmtQD(q.q_date)}${q.open_until&&q.open_until>q.q_date?'<br><span class="muted">jusqu\'au '+fmtQD(q.open_until)+'</span>':''}</td><td>${TYPES[q.case_type]}${q.extra?' (grille)':''}${q.multiplier>1?' ×'+q.multiplier:''}${q.speed?' ⚡':''}</td><td>${esc(q.question.slice(0,90))}${q.question.length>90?'…':''}</td><td>${esc(q.answer_label)}</td>
   <td><div class="acts"><button class="sm" data-a="e">Modifier</button><button class="sm danger" data-a="d">Supprimer</button></div></td></tr>`).join('')}
   </tbody></table></div></div>`;
   document.getElementById('sh').onsubmit=async ev=>{ev.preventDefault();const d=+document.getElementById('shd').value; if(!d||!confirm('Décaler les '+Q.length+' cases de '+d+' jour(s) ?'))return;
@@ -443,7 +443,9 @@ async function vQuestions(){
     <div class="field"><label>Fenêtre de bonus (s, vide = défaut)</label><input type="number" id="qw" min="1" value="${q.bonus_window_s||''}"></div></div>
     <label class="chk"><input type="checkbox" id="qp" ${q.speed?'checked':''}> Bonus de rapidité</label></div>
     <div class="field"><label>Explication (affichée après la réponse)</label><textarea id="qx">${esc(q.explanation||'')}</textarea></div>
-    <div class="field"><label>Adresse d'une image (facultatif, https://…)</label><input type="text" id="qi" value="${esc(q.image_url||'')}"></div>
+    <div class="grid2"><div class="field"><label>Adresse d'une image (https://… ou nom d'un fichier du dépôt, ex. mystere.jpg)</label><input type="text" id="qi" value="${esc(q.image_url||'')}"></div>
+    <div class="field"><label>Ouverte jusqu'au (week-end : le lundi ; vide = le jour même)</label><input type="date" id="qu" value="${esc(q.open_until||'')}"></div></div>
+    <div class="field"><label>Données de jeu (JSON, avancé : mots mêlés, mots croisés ; vide = aucune)</label><textarea id="qj" style="font-family:ui-monospace,Menlo,monospace;font-size:12px">${esc(q.extra?JSON.stringify(q.extra):'')}</textarea></div>
     <div class="acts"><button class="sm prime" type="submit">Enregistrer</button><button class="sm" type="button" id="cn">Annuler</button></div><div id="qm2"></div></form>`;
     const sync=()=>{const t=document.getElementById('qt').value,k=document.getElementById('qk').value,real=t==='question'||t==='bonus';
       document.getElementById('fa').hidden=!real;document.getElementById('fk').hidden=!real;
@@ -451,7 +453,8 @@ async function vQuestions(){
     document.getElementById('qt').onchange=sync;document.getElementById('qk').onchange=sync;sync();
     document.getElementById('cn').onclick=()=>e.innerHTML='';
     document.getElementById('qf').onsubmit=async ev=>{ev.preventDefault();const g=i=>document.getElementById(i).value, lines=s=>g(s).split('\n').map(x=>x.trim()).filter(Boolean);
-      const o={id:q.id||null,q_date:g('qd'),case_type:g('qt'),kind:g('qk'),question:g('qq'),explanation:g('qx'),image_url:g('qi'),multiplier:g('qm'),stake:g('qs'),bonus_window_s:g('qw'),speed:document.getElementById('qp').checked,accepted:lines('qa'),answer_label:g('ql'),choices:lines('qc'),correct:g('qr')};
+      const o={id:q.id||null,q_date:g('qd'),case_type:g('qt'),kind:g('qk'),question:g('qq'),explanation:g('qx'),image_url:g('qi'),multiplier:g('qm'),stake:g('qs'),bonus_window_s:g('qw'),speed:document.getElementById('qp').checked,accepted:lines('qa'),answer_label:g('ql'),choices:lines('qc'),correct:g('qr'),open_until:g('qu')};
+      try{o.extra=g('qj').trim()?JSON.parse(g('qj')):null;}catch(_){msg('qm2','Les données de jeu (JSON) sont invalides.');return;}
       try{await adm('aurea_admin_question_save',{p_q:o});vQuestions();}catch(er){msg('qm2',er.message);}};
     e.scrollIntoView({behavior:'smooth',block:'nearest'});
   }

@@ -173,6 +173,7 @@ input[type=text]:focus,input[type=password]:focus{outline:none;border-color:var(
 .qtext{font:500 24px/1.3 var(--serif);white-space:pre-line;margin:8px 0 22px;color:#F6F8FB}
 @media(min-width:768px){.qtext{font-size:28px}}
 .qimg{max-width:100%;max-height:320px;border-radius:var(--r-sm);margin:0 0 16px;display:block}
+.qtext.qsm{font:500 16px/1.5 Inter,system-ui,sans-serif;margin:8px 0 14px}
 .timer{display:flex;align-items:center;gap:12px;margin-bottom:16px;font-weight:500;color:var(--text-muted)}
 .timer .t{font-size:18px;font-variant-numeric:tabular-nums;min-width:56px;color:var(--text-main)}
 .meter{flex:1;height:4px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden}
@@ -251,6 +252,29 @@ input[type=file]{display:none}
 .daysel button[aria-pressed=true]{background:rgba(232,185,92,.14);border-color:var(--gold);color:var(--gold-hi)}
 .b.ph{background:rgba(232,185,92,.16);color:var(--gold-hi)}
 
+/* ---- Jeux de grilles ---- */
+.gwrap{margin:6px 0 16px}
+.wsg{display:grid;gap:3px;touch-action:none;user-select:none;-webkit-user-select:none;max-width:420px;margin:0 auto}
+.wc{aspect-ratio:1/1;display:grid;place-items:center;font:600 17px/1 Inter,sans-serif;color:var(--text-main);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:7px;cursor:pointer;padding:0}
+.wc.on{background:rgba(232,185,92,.3);border-color:var(--gold);color:var(--gold-hi)}
+.wwords{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.wwords span{font-size:12px;font-weight:600;letter-spacing:.06em;padding:3px 9px;border-radius:999px;border:1px solid var(--line-strong);color:var(--text-muted)}
+.wrest{margin:8px 0 2px;font-size:13px;color:var(--text-muted)}
+.wrest b{display:inline-block;letter-spacing:.3em;color:var(--gold-hi);font-size:17px;word-break:break-all}
+.xg{display:grid;gap:2px;max-width:420px;margin:0 auto}
+.xb{aspect-ratio:1/1}
+.xc{position:relative;aspect-ratio:1/1}
+.xc input{width:100%;height:100%;min-height:0;padding:0;text-align:center;text-transform:uppercase;font:600 16px/1 Inter,sans-serif;border-radius:5px;border:1px solid var(--line-strong);background:rgba(255,255,255,.07)}
+.xc.m input{background:rgba(232,185,92,.25);border-color:var(--gold)}
+.xc input:focus{outline:2px solid var(--ice);outline-offset:-1px;box-shadow:none}
+.xn{position:absolute;left:2px;top:0;font-size:8px;line-height:10px;color:var(--ice);pointer-events:none;font-weight:600}
+.xm{position:absolute;right:2px;bottom:0;font-size:8px;line-height:10px;color:var(--gold-hi);pointer-events:none;font-weight:700}
+.clues{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;font-size:13px;line-height:18px;margin-top:14px}
+@media(max-width:560px){.clues{grid-template-columns:1fr}}
+.clues h4{margin:0 0 4px;font:600 11px/16px Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.clues div div{margin:0 0 4px;color:var(--text-muted)}
+.clues b{color:var(--text-main)}
+.note.eco{border-color:rgba(142,197,238,.4);background:rgba(142,197,238,.08)}
 /* ---- Décor ---- */
 #forest{flex:none;line-height:0;position:relative;z-index:1;margin-top:36px;pointer-events:none}
 #forest svg{display:block;width:100%}
@@ -321,6 +345,7 @@ const ERR = {
 const S = { mode: 'login', pub: null, wallQ: null, wallT: null, pc: {}, code: null, st: null, tab: 'cal', qid: null, sel: null, offset: 0, lb: null, timer: null, cd: null };
 
 function store(k, v){ try{ if(v===undefined) return localStorage.getItem(k); if(v===null) localStorage.removeItem(k); else localStorage.setItem(k, v); }catch(e){ return null; } }
+const okImg = u => !!u && (/^https?:\/\//i.test(u) || /^[\w\-./]+\.(jpe?g|png|webp|gif)$/i.test(u));
 function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 const ic = (n, c = '') => `<svg class="ic ${c}" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 
@@ -632,11 +657,11 @@ function viewCalendar(){
       <span class="st">${esc(i.t)}</span>
       <span class="bot"><span>${pills(q, false)}</span>${i.pt || ''}</span><span class="spark" aria-hidden="true"></span></button>`;
   }).join('') + `</div><div class="legend">
-    <span class="i"><span class="b x3">×3</span> points triplés</span>
-    <span class="i"><span class="b sp">${ic('bolt')}</span> bonus de rapidité</span>
-    <span class="i"><span class="b bo">${ic('dice')}</span> quitte ou double</span>
-    <span class="i"><span class="b an">${ic('bulb')}</span> anecdote (facultatif, sans points)</span>
-    <span class="i"><span class="b ph">${ic('cam')}</span> défi photo (+${S.st.photo_points} pts de participation)</span></div>`;
+    ${qs.some(q => q.multiplier > 1) ? '<span class="i"><span class="b x3">×3</span> points triplés</span>' : ''}
+    ${qs.some(q => q.speed) ? `<span class="i"><span class="b sp">${ic('bolt')}</span> bonus de rapidité</span>` : ''}
+    ${qs.some(q => q.case_type === 'bonus') ? `<span class="i"><span class="b bo">${ic('dice')}</span> quitte ou double</span>` : ''}
+    ${qs.some(q => q.case_type === 'anecdote') ? `<span class="i"><span class="b an">${ic('bulb')}</span> anecdote (facultatif, sans points)</span>` : ''}
+    ${qs.some(q => q.case_type === 'photo') ? `<span class="i"><span class="b ph">${ic('cam')}</span> défi photo (+${S.st.photo_points} pts de participation)</span>` : ''}</div>`;
   pane.querySelectorAll('.tile:not([disabled])').forEach(t => t.onclick = () => { const go = () => { S.qid = +t.dataset.id; S.sel = null; render(); }; if(calm){ go(); return; } t.classList.add('flash'); setTimeout(go, 280); });
 }
 
@@ -660,11 +685,18 @@ function viewQuestion(){
   viewPlay(q, q.content);
 }
 
+const DAYN = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+function untilNote(q){
+  const cl = new Date(new Date(q.closes_at).getTime() - 1), d = parseD(q.q_date);
+  if(cl.getFullYear() === d.getFullYear() && cl.getMonth() === d.getMonth() && cl.getDate() === d.getDate()) return '';
+  return `<div class="note eco"><b>Case du week-end :</b> elle reste ouverte jusqu'au ${DAYN[cl.getDay()]} ${cl.getDate()} à minuit, sans bonus de rapidité.</div>`;
+}
 function viewIntro(q){
   const st = S.st;
   $app.innerHTML = `${head(q)}<div class="card">
     <span class="intro-ic glow-ic">${ic(q.case_type === 'bonus' ? 'dice' : 'star')}</span><h1>Prêt·e à découvrir la question ?</h1>
     ${q.case_type === 'bonus' ? `<div class="note double"><b class="h">Mode Quitte ou Double : ${q.stake} points en jeu</b>Dès que vous découvrez la question, ${q.stake} points sont misés : bonne réponse <b>+${q.stake}</b>, mauvaise réponse <b>−${q.stake}</b>. Ne pas répondre compte aussi comme une mauvaise réponse.</div>` : ''}
+    ${untilNote(q)}
     <div class="note"><b>Une seule réponse possible.</b> Le chronomètre démarre dès que vous découvrez la question${q.speed && q.case_type === 'question' ? ` : plus vous répondez vite, plus vous gagnez de points (jusqu'à +${st.bonus_max} avant multiplicateur, bonus nul après ${q.bonus_window_s} s)` : ''}.
       ${q.multiplier > 1 && q.case_type === 'question' ? `<br>Cette question compte <b>×${q.multiplier}</b>.` : ''}</div>
     <div class="cta"><button class="btn" id="start">Découvrir la question</button><div class="err" id="e"></div></div></div>`;
@@ -675,7 +707,7 @@ function viewIntro(q){
       const r = await rpc('aurea_start', {p_code: S.code, p_qid: q.id});
       S.offset = new Date(r.now).getTime() - Date.now();
       q.attempt = {started_at: r.started_at, answered:false};
-      q.content = {kind:r.kind, question:r.question, image_url:r.image_url, choices:r.choices};
+      q.content = {kind:r.kind, question:r.question, image_url:r.image_url, choices:r.choices, extra:r.extra};
       viewPlay(q, q.content);
     }catch(err){ document.getElementById('start').disabled = false; document.getElementById('e').textContent = err.message; }
   };
@@ -684,14 +716,14 @@ function viewIntro(q){
 function viewPlay(q, c){
   const st = S.st, started = new Date(q.attempt.started_at).getTime();
   const letters = ['A','B','C','D'], fast = q.speed && q.case_type === 'question';
-  const img = c.image_url && /^https?:\/\//i.test(c.image_url) ? `<img class="qimg" src="${esc(c.image_url)}" alt="">` : '';
+  const img = okImg(c.image_url) ? `<img class="qimg" src="${esc(c.image_url)}" alt="">` : '';
   const input = c.kind === 'qcm'
     ? `<div class="choices">${(c.choices||[]).map((t,i) => `<button class="choice" data-l="${letters[i]}" aria-pressed="false"><span class="l">${letters[i]}</span><span>${esc(t)}</span></button>`).join('')}</div>`
-    : `<label for="ans">Votre réponse</label><input type="text" id="ans" maxlength="200" autocomplete="off" autocapitalize="off" spellcheck="false">`;
+    : `${c.extra ? '<div class="gwrap" id="gw"></div>' : ''}<label for="ans">${c.extra ? 'Votre mot mystère' : 'Votre réponse'}</label><input type="text" id="ans" maxlength="200" autocomplete="off" autocapitalize="off" spellcheck="false">`;
   $app.innerHTML = `${head(q)}<div class="card">
     <div class="timer">${ic('clock')}<span class="t" id="tm">00:00</span>
       ${fast ? `<div class="meter"><i id="mt"></i></div><span class="bn" id="bn"></span>` : '<span style="flex:1"></span>'}</div>
-    <div class="qtext">${esc(c.question)}</div>${img}${input}
+    <div class="qtext ${c.extra ? 'qsm' : ''}">${esc(c.question)}</div>${img}${input}
     <div class="cta"><button class="btn" id="ok" ${c.kind==='qcm'?'disabled':''}>Valider la réponse (définitif)</button><div class="err" id="e"></div></div></div>`;
   bindBack();
   const tick = () => {
@@ -704,6 +736,7 @@ function viewPlay(q, c){
     }
   };
   tick(); S.timer = setInterval(tick, 250);
+  if(c.extra) mountGrid(c.extra, q.id);
   const ok = document.getElementById('ok');
   if(c.kind === 'qcm'){
     document.querySelectorAll('.choice').forEach(b => b.onclick = () => {
@@ -712,7 +745,7 @@ function viewPlay(q, c){
       ok.disabled = false;
     });
   } else {
-    const inp = document.getElementById('ans'); inp.focus();
+    const inp = document.getElementById('ans'); if(!c.extra) inp.focus();
     inp.onkeydown = e => { if(e.key === 'Enter') ok.click(); };
   }
   ok.onclick = async () => {
@@ -729,6 +762,65 @@ function viewPlay(q, c){
       else { ok.disabled = false; S.timer = setInterval(tick, 250); }
     }
   };
+}
+
+
+/* ---------- jeux de grilles ---------- */
+const gkey = id => 'aurea_g_' + (S.code || '') + '_' + id;
+function mountGrid(x, qid){
+  const host = document.getElementById('gw'); if(!host) return;
+  let saved = {}; try{ saved = JSON.parse(store(gkey(qid)) || '{}'); }catch(e){}
+  const save = () => store(gkey(qid), JSON.stringify(saved));
+  if(x.type === 'wordsearch'){
+    const n = x.grid.length;
+    host.innerHTML = `<div class="wsg" id="wsg" style="grid-template-columns:repeat(${n},1fr)">${x.grid.map((row, r) => [...row].map((ch, c) => `<button type="button" class="wc ${saved[r+','+c] ? 'on' : ''}" data-k="${r},${c}" tabindex="-1">${esc(ch)}</button>`).join('')).join('')}</div>
+      <div class="wwords">${x.words.map(w => `<span>${esc(w)}</span>`).join('')}</div>
+      <div class="muted">Touche ou glisse le doigt sur les lettres pour surligner un prénom trouvé.</div>
+      <div class="wrest">Lettres restantes : <b id="rest"></b></div>`;
+    const rest = () => { document.getElementById('rest').textContent = [...host.querySelectorAll('.wc:not(.on)')].map(b => b.textContent).join(''); };
+    rest();
+    const g = document.getElementById('wsg'); let mode = null;
+    const apply = b => { if(!b || !b.classList.contains('wc')) return; const on = mode === 'on'; if(b.classList.contains('on') === on) return; b.classList.toggle('on', on); if(on) saved[b.dataset.k] = 1; else delete saved[b.dataset.k]; save(); rest(); };
+    g.addEventListener('pointerdown', e => { const b = e.target.closest('.wc'); if(!b) return; e.preventDefault(); mode = b.classList.contains('on') ? 'off' : 'on'; apply(b); });
+    g.addEventListener('pointermove', e => { if(!mode) return; apply(document.elementFromPoint(e.clientX, e.clientY)); });
+    addEventListener('pointerup', () => { mode = null; });
+    return;
+  }
+  if(x.type === 'crossword'){
+    const R = x.rows, C = x.cols, cells = x.cells;
+    host.innerHTML = `<div class="xg" id="xg" style="grid-template-columns:repeat(${C},1fr)">${cells.map((row, r) => row.map((cell, c) => !cell ? '<div class="xb"></div>' :
+      `<div class="xc ${cell.m ? 'm' : ''}">${cell.n ? `<span class="xn">${cell.n}</span>` : ''}${cell.m ? `<span class="xm">${cell.m}</span>` : ''}<input type="text" maxlength="1" data-r="${r}" data-c="${c}" value="${esc(saved[r+','+c] || '')}" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Ligne ${r+1}, colonne ${c+1}"></div>`).join('')).join('')}</div>
+      <div class="wrest">Mot mystère : <b id="mys"></b></div>
+      <div class="clues"><div><h4>Horizontalement</h4>${x.across.map(a => `<div><b>${a.n}.</b> ${esc(a.clue)} (${a.len})</div>`).join('')}</div>
+      <div><h4>Verticalement</h4>${x.down.map(a => `<div><b>${a.n}.</b> ${esc(a.clue)} (${a.len})</div>`).join('')}</div></div>`;
+    const inputs = [...host.querySelectorAll('input')], at = (r, c) => host.querySelector(`input[data-r="${r}"][data-c="${c}"]`);
+    let dir = 'A';
+    const mys = () => {
+      const m = []; cells.forEach((row, r) => row.forEach((cell, c) => { if(cell && cell.m) m[cell.m - 1] = (at(r, c).value || '').toUpperCase(); }));
+      document.getElementById('mys').textContent = m.map(v => v || '_').join(' ');
+      const full = m.length && m.every(v => v);
+      const ans = document.getElementById('ans'); if(full && ans && !ans.dataset.touched) ans.value = m.join('');
+    };
+    const ans = document.getElementById('ans'); if(ans) ans.addEventListener('input', () => { ans.dataset.touched = 1; });
+    mys();
+    inputs.forEach(inp => {
+      const r = +inp.dataset.r, c = +inp.dataset.c;
+      inp.addEventListener('focus', () => inp.select());
+      inp.addEventListener('click', () => { if(document.activeElement === inp && inp._was) dir = dir === 'A' ? 'D' : 'A'; inp._was = true; });
+      inp.addEventListener('blur', () => { inp._was = false; });
+      inp.addEventListener('input', () => {
+        inp.value = inp.value.replace(/[^A-Za-zÀ-ÿ]/g, '').toUpperCase().slice(-1);
+        saved[r+','+c] = inp.value; save(); mys();
+        if(inp.value){ const nx = dir === 'A' ? at(r, c + 1) || at(r + 1, c) : at(r + 1, c) || at(r, c + 1); if(nx) nx.focus(); }
+      });
+      inp.addEventListener('keydown', e => {
+        const mv = {ArrowRight:[0,1], ArrowLeft:[0,-1], ArrowDown:[1,0], ArrowUp:[-1,0]}[e.key];
+        if(mv){ e.preventDefault(); const t = at(r + mv[0], c + mv[1]); if(t) t.focus(); return; }
+        if(e.key === 'Backspace' && !inp.value){ e.preventDefault(); const p = dir === 'A' ? at(r, c - 1) || at(r - 1, c) : at(r - 1, c) || at(r, c - 1); if(p){ p.focus(); p.value = ''; saved[p.dataset.r+','+p.dataset.c] = ''; save(); mys(); } }
+        if(e.key === 'Enter'){ e.preventDefault(); const ok = document.getElementById('ok'); if(ok && !ok.disabled) ok.focus(); }
+      });
+    });
+  }
 }
 
 function viewResult(q, r, val){
@@ -766,7 +858,7 @@ function viewReview(q){
 function viewAnecdote(q){
   const a = q.attempt, c = q.content;
   const show = c => {
-    const img = c.image_url && /^https?:\/\//i.test(c.image_url) ? `<img class="qimg" src="${esc(c.image_url)}" alt="">` : '';
+    const img = okImg(c.image_url) ? `<img class="qimg" src="${esc(c.image_url)}" alt="">` : '';
     $app.innerHTML = `${head(q)}<div class="card"><h1>Note technique &amp; photonique du jour</h1><div class="anec-text">${esc(c.question)}</div>${img}<span class="muted">Aucun point en jeu sur cette case.</span></div>`;
     bindBack();
   };
@@ -818,6 +910,7 @@ function viewPhoto(q){
   }
   $app.innerHTML = `${head(q)}<div class="card"><h1>Défi photo</h1>
     <div class="qtext" style="margin-top:12px">${esc(q.content ? q.content.question : '')}</div>
+    ${untilNote(q)}
     <div class="note">Une seule photo par défi. Participation : <b>+${S.st.photo_points} pts</b>. La photo est réduite sur votre appareil avant l'envoi, ce qui supprime sa position GPS et ses métadonnées.</div>
     <div class="drop" id="drop"><div class="muted" id="hint">Aucune photo choisie</div>
       <img id="prev" alt="" hidden>
@@ -922,17 +1015,18 @@ async function viewBoard(){
     ${lb.visible ? '<p class="muted" style="padding:8px;margin:0">En cas d\'égalité : le plus de bonnes réponses, puis le temps cumulé le plus court (colonne Temps, calculé sur les bonnes réponses).</p>' : ''}</div>`;
 }
 function viewRules(){
-  const st = S.st, h = new Date(S.st.questions[0]?.opens_at || Date.now()).getHours();
+  const st = S.st, qs = st.questions, h = new Date(qs[0]?.opens_at || Date.now()).getHours();
+  const has = f => qs.some(f), wk = has(q => new Date(q.closes_at).getTime() - new Date(q.opens_at).getTime() > 30 * 36e5);
   document.getElementById('pane').innerHTML = `<div class="card rules"><h2>Comment ça marche ?</h2><ul>
-    <li>Chaque jour, une nouvelle case s'ouvre à ${h}h et reste jouable <b>jusqu'à minuit</b>, le jour même uniquement.</li>
-    <li>Vous jouez <b>seul·e</b> et vous n'avez <b>qu'une seule réponse</b> par question : relisez avant de valider.</li>
-    <li>Une fois la journée passée, la case est <b>verrouillée</b> : plus de réponse possible, mais la bonne réponse et l'explication restent consultables. Aucun retour en arrière, y compris pour les inscriptions tardives.</li>
-    <li>Une bonne réponse rapporte <b>${st.base_points} points</b>. Les cases <span class="b x3">×3</span> multiplient les points.</li>
-    <li>Sur les cases <span class="b sp">${ic('bolt')} Rapidité</span>, le chrono démarre quand vous découvrez la question : plus vite vous répondez, plus le bonus (jusqu'à <b>+${st.bonus_max}</b>) est grand.</li>
-    <li><span class="b bo">${ic('dice')} Quitte ou double</span> Une question bonus peut apparaître en cours de jeu : bonne réponse = gros gain, mauvaise réponse (ou pas de réponse une fois la question découverte) = même montant perdu. La mise est annoncée avant la question.</li>
-    <li><span class="b an">${ic('bulb')} Anecdote</span> Le week-end, une note sur l'entreprise vous attend : facultatif et sans points.</li>
-    <li><span class="b ph">${ic('cam')} Défi photo</span> Envoyez une photo (appareil photo ou galerie) : <b>+${st.photo_points} points de participation</b>. Elle sera visible de vos collègues dans le pêle-mêle du jour, que vous pouvez télécharger en une image.</li>
-    <li>Inscrit·e en retard ? Vous démarrez simplement à 0 point, sur les cases du jour.</li>
+    <li>Chaque jour, une nouvelle case s'ouvre à ${h}h et reste jouable <b>jusqu'à minuit</b>${wk ? ', sauf les cases du week-end, qui restent ouvertes <b>jusqu\'au lundi minuit</b> (sans bonus de rapidité)' : ''}.</li>
+    <li>Vous jouez <b>seul·e</b> et vous n'avez <b>qu'une seule réponse</b> par case : relisez avant de valider.</li>
+    <li>Une fois la période passée, la case est <b>verrouillée</b> : plus de réponse possible, mais la bonne réponse et l'explication restent consultables. Aucun retour en arrière, y compris pour les inscriptions tardives.</li>
+    <li>Une bonne réponse rapporte <b>${st.base_points} points</b>.${has(q => q.multiplier > 1) ? ' Les cases <span class="b x3">×3</span> multiplient les points.' : ''}</li>
+    ${has(q => q.speed) ? `<li><span class="b sp">${ic('bolt')} Rapidité</span> Le chrono démarre quand vous découvrez la case : plus vite vous répondez, plus le bonus (jusqu'à <b>+${st.bonus_max}</b>) est grand. Mots mêlés, mots croisés et photo-mystère : le plus rapide gagne le plus.</li>` : ''}
+    ${has(q => q.case_type === 'bonus') ? `<li><span class="b bo">${ic('dice')} Quitte ou double</span> Bonne réponse = gros gain, mauvaise réponse (ou pas de réponse une fois la question découverte) = même montant perdu. La mise est annoncée avant la question.</li>` : ''}
+    ${has(q => q.case_type === 'anecdote') ? `<li><span class="b an">${ic('bulb')} Anecdote</span> Une note sur l'entreprise, facultative et sans points.</li>` : ''}
+    ${has(q => q.case_type === 'photo') ? `<li><span class="b ph">${ic('cam')} Défi photo</span> Envoyez une photo (appareil photo ou galerie) : <b>+${st.photo_points} points de participation</b>. Elle sera visible de vos collègues dans le pêle-mêle du jour, que vous pouvez télécharger en une image.</li>` : ''}
+    <li>Inscrit·e en retard ? Vous démarrez simplement à 0 point, sur les cases encore ouvertes.</li>
     <li>En fin de jeu, les lots sont attribués selon le classement et/ou par tirage au sort parmi les meilleurs joueurs.</li>
     <li>Les accents et les majuscules n'ont pas d'importance dans vos réponses.</li></ul></div>`;
 }
